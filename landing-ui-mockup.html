@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoseKit - Pose Reference Library UI Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pose-card {
+            transition: all 0.2s ease;
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+        .pose-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .variant-dot {
+            transition: all 0.15s ease;
+        }
+        .variant-dot.active {
+            transform: scale(1.2);
+        }
+        .skeleton-overlay {
+            background: linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%);
+            background-size: 20px 20px;
+            opacity: 0.6;
+        }
+        
+        /* Masonry Layout */
+        .masonry {
+            column-count: 4;
+            column-gap: 1.5rem;
+            column-fill: balance;
+        }
+        @media (max-width: 1280px) {
+            .masonry { column-count: 3; }
+        }
+        @media (max-width: 768px) {
+            .masonry { column-count: 2; }
+        }
+        @media (max-width: 640px) {
+            .masonry { column-count: 1; }
+        }
+        
+        /* Sticky Filter Bar */
+        .filter-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        /* Variable card heights */
+        .card-tall { aspect-ratio: 3/5; }
+        .card-medium { aspect-ratio: 4/5; }
+        .card-short { aspect-ratio: 5/5; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900">📸 PoseKit</h1>
+                    <span class="text-sm text-gray-500">姿势参考图库</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="p-2 rounded-lg hover:bg-gray-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </button>
+                    <span class="text-xs text-gray-400">收藏 (3)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="bg-white py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">找到完美姿势</h2>
+                <p class="text-gray-600">搜索 • 复制 • 创作</p>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="relative mb-6">
+                <input type="text" 
+                       placeholder="搜索姿势：掀头纱、亲子、满月照..." 
+                       class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+                <button class="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium hover:bg-blue-200">婚纱</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200">亲子</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200">满月</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200">闺蜜</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200">家庭</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200">情侣</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pose Cards Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            
+            <!-- Pose Card 1 - 掀头纱对视 -->
+            <div class="pose-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 cursor-pointer">
+                <!-- Image Container -->
+                <div class="relative aspect-[4/5] bg-gradient-to-br from-pink-50 to-purple-50">
+                    <!-- Skeleton Overlay -->
+                    <div class="absolute inset-0 skeleton-overlay"></div>
+                    <!-- Pose Silhouette -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-32 h-40 text-gray-600 opacity-80" fill="currentColor" viewBox="0 0 100 120">
+                            <!-- Simplified human pose silhouette -->
+                            <circle cx="50" cy="15" r="8"/>
+                            <rect x="46" y="22" width="8" height="25" rx="4"/>
+                            <rect x="35" y="25" width="15" height="4" rx="2"/>
+                            <rect x="65" y="25" width="15" height="4" rx="2"/>
+                            <rect x="45" y="47" width="10" height="20" rx="5"/>
+                            <rect x="40" y="67" width="8" height="25" rx="4"/>
+                            <rect x="52" y="67" width="8" height="25" rx="4"/>
+                        </svg>
+                    </div>
+                    <!-- Copy Actions (top-right) -->
+                    <div class="absolute top-3 right-3 flex space-x-1">
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white" title="复制PNG">
+                            <span class="text-xs">🖼</span>
+                        </button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white" title="复制JSON">
+                            <span class="text-xs">{}</span>
+                        </button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white" title="复制提示词">
+                            <span class="text-xs">✍️</span>
+                        </button>
+                    </div>
+                    <!-- Variant Selector (bottom-center) -->
+                    <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                        <button class="variant-dot active w-2 h-2 bg-white rounded-full" title="原始"></button>
+                        <button class="variant-dot w-2 h-2 bg-white/60 rounded-full" title="镜像"></button>
+                        <button class="variant-dot w-2 h-2 bg-white/60 rounded-full" title="侧45°"></button>
+                    </div>
+                </div>
+                
+                <!-- Card Content -->
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-2">掀头纱对视</h3>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <span class="px-2 py-1 bg-pink-100 text-pink-800 text-xs rounded">站姿</span>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded">对视</span>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">85mm</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Wedding • 婚纱系列</p>
+                </div>
+            </div>
+
+            <!-- Pose Card 2 - 新生儿趴睡 -->
+            <div class="pose-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 cursor-pointer">
+                <div class="relative aspect-[4/5] bg-gradient-to-br from-blue-50 to-green-50">
+                    <div class="absolute inset-0 skeleton-overlay"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-20 h-16 text-gray-600 opacity-80" fill="currentColor" viewBox="0 0 80 60">
+                            <ellipse cx="40" cy="30" rx="25" ry="15"/>
+                            <circle cx="40" cy="20" r="8"/>
+                        </svg>
+                    </div>
+                    <!-- Safety Warning -->
+                    <div class="absolute top-2 left-2 bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs font-medium">
+                        ⚠️ 安全提醒
+                    </div>
+                    <div class="absolute top-3 right-3 flex space-x-1">
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">🖼</button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">{}</button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">✍️</button>
+                    </div>
+                    <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                        <button class="variant-dot active w-2 h-2 bg-white rounded-full"></button>
+                        <button class="variant-dot w-2 h-2 bg-white/60 rounded-full"></button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-2">新生儿趴睡</h3>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">趴姿</span>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">特写</span>
+                        <span class="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded">新生儿</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Newborn • 新生儿系列</p>
+                </div>
+            </div>
+
+            <!-- Pose Card 3 - 亲子互动 -->
+            <div class="pose-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 cursor-pointer">
+                <div class="relative aspect-[4/5] bg-gradient-to-br from-yellow-50 to-orange-50">
+                    <div class="absolute inset-0 skeleton-overlay"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-36 h-40 text-gray-600 opacity-80" fill="currentColor" viewBox="0 0 120 120">
+                            <!-- Parent figure -->
+                            <circle cx="35" cy="15" r="8"/>
+                            <rect x="31" y="22" width="8" height="25" rx="4"/>
+                            <rect x="20" y="25" width="15" height="4" rx="2"/>
+                            <rect x="45" y="25" width="15" height="4" rx="2"/>
+                            <rect x="30" y="47" width="10" height="20" rx="5"/>
+                            <rect x="25" y="67" width="8" height="25" rx="4"/>
+                            <rect x="37" y="67" width="8" height="25" rx="4"/>
+                            <!-- Child figure -->
+                            <circle cx="75" cy="25" r="6"/>
+                            <rect x="72" y="30" width="6" height="18" rx="3"/>
+                            <rect x="65" y="32" width="10" height="3" rx="1"/>
+                            <rect x="80" y="32" width="10" height="3" rx="1"/>
+                            <rect x="71" y="48" width="8" height="15" rx="4"/>
+                        </svg>
+                    </div>
+                    <div class="absolute top-3 right-3 flex space-x-1">
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">🖼</button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">{}</button>
+                        <button class="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center hover:bg-white">✍️</button>
+                    </div>
+                    <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                        <button class="variant-dot active w-2 h-2 bg-white rounded-full"></button>
+                        <button class="variant-dot w-2 h-2 bg-white/60 rounded-full"></button>
+                        <button class="variant-dot w-2 h-2 bg-white/60 rounded-full"></button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-2">亲子牵手</h3>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">站姿</span>
+                        <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">互动</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">50mm</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Family • 亲子系列</p>
+                </div>
+            </div>
+
+            <!-- More cards can be added here... -->
+            <!-- Placeholder for more cards -->
+            <div class="pose-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200 cursor-pointer opacity-50">
+                <div class="relative aspect-[4/5] bg-gray-100 flex items-center justify-center">
+                    <span class="text-gray-400">更多姿势...</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-400 mb-2">加载中</h3>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Load More -->
+        <div class="text-center mt-12">
+            <button class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                加载更多姿势
+            </button>
+        </div>
+    </main>
+
+    <!-- Toast Notification (示例) -->
+    <div class="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-full transition-transform duration-300" id="toast">
+        ✅ 已复制 · 掀头纱对视（85mm）
+    </div>
+
+    <!-- Bottom Navigation (移动端) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 sm:hidden">
+        <div class="flex justify-around">
+            <button class="flex flex-col items-center py-1">
+                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span class="text-xs text-blue-600">首页</span>
+            </button>
+            <button class="flex flex-col items-center py-1">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <span class="text-xs text-gray-400">搜索</span>
+            </button>
+            <button class="flex flex-col items-center py-1">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                <span class="text-xs text-gray-400">收藏</span>
+            </button>
+            <button class="flex flex-col items-center py-1">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/></path></svg>
+                <span class="text-xs text-gray-400">编辑器</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // 简单的交互演示
+        document.querySelectorAll('.pose-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // 模拟复制反馈
+                const toast = document.getElementById('toast');
+                toast.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    toast.style.transform = 'translateY(100%)';
+                }, 2000);
+            });
+        });
+
+        // 变体切换演示
+        document.querySelectorAll('.variant-dot').forEach(dot => {
+            dot.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // 移除当前卡片所有活跃状态
+                const card = this.closest('.pose-card');
+                card.querySelectorAll('.variant-dot').forEach(d => d.classList.remove('active'));
+                // 激活当前点击的变体
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

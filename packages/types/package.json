@@ -1,0 +1,38 @@
+{
+  "name": "@posekit/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript type definitions for PoseKit",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./pose": {
+      "types": "./dist/pose.d.ts",
+      "default": "./dist/pose.js"
+    },
+    "./asset": {
+      "types": "./dist/asset.d.ts",
+      "default": "./dist/asset.js"
+    },
+    "./user": {
+      "types": "./dist/user.d.ts",
+      "default": "./dist/user.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/api.js"
+    }
+  }
+}

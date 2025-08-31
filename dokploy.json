@@ -1,0 +1,72 @@
+{
+  "name": "posekit",
+  "description": "Professional pose reference library for artists and designers",
+  "type": "docker-compose",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/posekit.git",
+    "branch": "main"
+  },
+  "buildArgs": {
+    "NEXT_PUBLIC_API_URL": "${NEXT_PUBLIC_API_URL}",
+    "NEXT_PUBLIC_CDN_URL": "${NEXT_PUBLIC_CDN_URL}"
+  },
+  "environment": {
+    "NODE_ENV": "production",
+    "POSTGRES_DB": "${POSTGRES_DB}",
+    "POSTGRES_USER": "${POSTGRES_USER}",
+    "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}",
+    "REDIS_PASSWORD": "${REDIS_PASSWORD}",
+    "JWT_SECRET": "${JWT_SECRET}",
+    "CDN_BASE_URL": "${CDN_BASE_URL}",
+    "NEXT_PUBLIC_API_URL": "${NEXT_PUBLIC_API_URL}",
+    "NEXT_PUBLIC_CDN_URL": "${NEXT_PUBLIC_CDN_URL}"
+  },
+  "domains": [
+    {
+      "host": "your-domain.com",
+      "port": 80,
+      "path": "/"
+    }
+  ],
+  "healthCheck": {
+    "enabled": true,
+    "path": "/health",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
+  "resources": {
+    "limits": {
+      "memory": "2Gi",
+      "cpu": "1000m"
+    },
+    "requests": {
+      "memory": "512Mi",
+      "cpu": "250m"
+    }
+  },
+  "volumes": [
+    {
+      "name": "postgres_data",
+      "mountPath": "/var/lib/postgresql/data",
+      "size": "10Gi"
+    },
+    {
+      "name": "uploads_data",
+      "mountPath": "/app/uploads",
+      "size": "20Gi"
+    },
+    {
+      "name": "redis_data",
+      "mountPath": "/data",
+      "size": "1Gi"
+    }
+  ],
+  "backup": {
+    "enabled": true,
+    "schedule": "0 2 * * *",
+    "retention": "7d",
+    "databases": ["postgres"]
+  }
+}

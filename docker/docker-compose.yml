@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: posekit-postgres
+    environment:
+      POSTGRES_DB: posekit
+      POSTGRES_USER: posekit_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-posekit_dev_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+    networks:
+      - posekit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posekit_user -d posekit"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: posekit-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-posekit_redis_dev}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - posekit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Server
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: ../../docker/api/Dockerfile
+    container_name: posekit-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      
+      # Database
+      DATABASE_URL: postgresql://posekit_user:${POSTGRES_PASSWORD:-posekit_dev_password}@postgres:5432/posekit
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-posekit_redis_dev}@redis:6379
+      
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      
+      # Storage (S3/CDN)
+      CDN_URL: ${CDN_URL:-https://cdn.posekit.com}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-aws-s3}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-posekit-assets}
+      
+      # Email (optional)
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@posekit.com}
+      
+      # External APIs (optional)
+      SENTRY_DSN: ${SENTRY_DSN}
+      
+    volumes:
+      - ../apps/api:/app
+      - /app/node_modules
+      - api_uploads:/app/uploads
+    ports:
+      - "3001:3001"
+    networks:
+      - posekit-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Frontend (Next.js)
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: ../../docker/web/Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV:-development}
+    container_name: posekit-web
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_CDN_URL: ${CDN_URL:-https://cdn.posekit.com}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      NEXT_PUBLIC_GA_ID: ${GOOGLE_ANALYTICS_ID}
+    volumes:
+      - ../apps/web:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    networks:
+      - posekit-network
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Admin Dashboard
+  admin:
+    build:
+      context: ../apps/admin
+      dockerfile: ../../docker/admin/Dockerfile
+    container_name: posekit-admin
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      VITE_CDN_URL: ${CDN_URL:-https://cdn.posekit.com}
+    volumes:
+      - ../apps/admin:/app
+      - /app/node_modules
+      - /app/dist
+    ports:
+      - "3002:3000"
+    networks:
+      - posekit-network
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: posekit-nginx
+    profiles:
+      - production
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites-available:/etc/nginx/sites-available
+      - ./ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - posekit-network
+    depends_on:
+      - web
+      - api
+      - admin
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  api_uploads:
+    driver: local
+
+networks:
+  posekit-network:
+    driver: bridge
