@@ -13,6 +13,9 @@ COPY apps/web ./
 # Remove workspace dependency completely
 RUN sed -i '/"@posekit\/types":/d' package.json
 
+# Add missing dependencies that were removed
+RUN sed -i '/"framer-motion"/a\    "react-dropzone": "^14.2.3",' package.json
+
 # Install dependencies
 RUN npm install --legacy-peer-deps
 
