@@ -10,11 +10,15 @@ WORKDIR /app
 # Copy web application files
 COPY apps/web ./
 
-# Remove workspace dependency to avoid build issues
-RUN sed -i 's/"@posekit\/types": "file:.*"/"@posekit\/types": "^1.0.0"/g' package.json || true
+# Remove workspace dependency completely
+RUN sed -i '/"@posekit\/types":/d' package.json
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
+
+# Replace @posekit/types imports with local types
+RUN find . -name "*.ts" -o -name "*.tsx" | xargs sed -i "s|from '@posekit/types'|from '@/types'|g"
+RUN find . -name "*.ts" -o -name "*.tsx" | xargs sed -i "s|import.*@posekit/types.*|// Removed @posekit/types import|g"
 
 # Build arguments
 ARG NEXT_PUBLIC_API_URL=https://api.posekit.com
