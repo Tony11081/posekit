@@ -16,7 +16,7 @@
     "next": "^14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@posekit/types": "workspace:*",
+    "@posekit/types": "file:../../packages/types",
     "fuse.js": "^7.0.0",
     "jszip": "^3.10.1",
     "framer-motion": "^10.16.16",
@@ -24,8 +24,7 @@
     "react-hotkeys-hook": "^4.4.1",
     "react-window": "^1.8.8",
     "react-window-infinite-loader": "^1.0.9",
-    "workbox-webpack-plugin": "^7.0.0",
-    "workbox-window": "^7.0.0"
+    "@ducanh2912/next-pwa": "^10.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",

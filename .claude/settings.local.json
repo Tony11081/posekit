@@ -4,7 +4,8 @@
       "Bash(chmod:*)",
       "Bash(mv:*)",
       "Bash(rm:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(npm install)"
     ],
     "deny": []
   }
