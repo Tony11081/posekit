@@ -56,7 +56,6 @@ const nextConfig = {
   
   // Experimental features
   experimental: {
-    appDir: false, // Using pages directory for now
     optimizeCss: true,
     scrollRestoration: true,
   },
