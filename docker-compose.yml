@@ -41,8 +41,9 @@ ENV NEXT_PUBLIC_CDN_URL=$NEXT_PUBLIC_CDN_URL
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a minimal next.config.js to skip type checking
-RUN echo "module.exports = { typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }, output: 'standalone' }" > next.config.js
+# Backup original config and create minimal config for build
+RUN mv next.config.js next.config.js.backup || true
+RUN echo "module.exports = { typescript: { ignoreBuildErrors: true }, eslint: { ignoreDuringBuilds: true }, output: 'standalone', experimental: { optimizeCss: false } }" > next.config.js
 
 # Build the application
 RUN npm run build
