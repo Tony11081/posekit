@@ -15,13 +15,11 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Enable static export for SEO
-  output: 'export',
-  trailingSlash: true,
+  // Enable standalone for Docker deployment
+  output: 'standalone',
   
   // Image optimization
   images: {
-    unoptimized: true, // Required for static export
     domains: [
       'cdn.posekit.com',
       'assets.posekit.com',
