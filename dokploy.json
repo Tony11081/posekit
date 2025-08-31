@@ -1,7 +1,7 @@
 {
   "name": "posekit",
   "description": "Professional pose reference library for artists and designers",
-  "type": "docker-compose",
+  "type": "dockerfile",
   "repository": {
     "type": "git",
     "url": "https://github.com/your-username/posekit.git",
